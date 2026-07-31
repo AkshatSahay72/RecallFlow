@@ -15,5 +15,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    JWT_SECRET_KEY: str = "dev_secret_key_change_me_in_production_1234567890"
+    ALGORITHM: str = "HS256"
+
 
 settings = Settings()

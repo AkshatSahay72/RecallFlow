@@ -5,3 +5,5 @@ sqlalchemy
 psycopg2-binary
 Alembic 
 bcrypt
+pyjwt
+python-multipart

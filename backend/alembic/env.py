@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from app.core.config import settings
 from app.db.base import Base
 from app.models.user import User  # Must import models to register them with Base
+from app.models.tasks import Task  # Must import models to register them with Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

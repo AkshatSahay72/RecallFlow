@@ -1,5 +1,30 @@
+# Virtual Environment
 .venv/
+venv/
+ENV/
+
+# Python Cache & Compiled Bytecode
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Environment Secrets
 .env
+.env*.local
+
+# Editor / IDE configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS metadata
 .DS_Store
+Thumbs.db
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
