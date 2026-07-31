@@ -3,3 +3,5 @@ uvicorn[standard]
 pydantic-settings
 sqlalchemy
 psycopg2-binary
+Alembic 
+bcrypt

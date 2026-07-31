@@ -14,6 +14,8 @@ backend/
 ├── .env.example          # Template for environment configuration
 ├── .gitignore            # Git exclusion rules
 ├── requirements.txt      # Dependency manifest
+├── alembic.ini           # Alembic migration configuration
+├── alembic/              # Database migration scripts
 └── app/
     ├── __init__.py
     ├── main.py           # Application entry point
@@ -32,9 +34,12 @@ backend/
     │   ├── __init__.py
     │   ├── base.py       # DeclarativeBase definition for models
     │   └── session.py    # SQLAlchemy database connection and sessionmaker
-    └── models/
+    ├── models/
+    │   ├── __init__.py
+    │   └── user.py       # User database model
+    └── schemas/
         ├── __init__.py
-        └── user.py       # User database model (currently empty)
+        └── user.py       # User Pydantic schemas (request/response validation)
 ```
 
 ---
@@ -63,6 +68,35 @@ backend/
 * Created the shell `app/models/user.py` file for future user records.
 * **Commit**: `bb334d7 Configure SQLAlchemy connection to Neon PostgreSQL`
 
+### Step 6 — Initial User Model
+* Installed database dependencies (`sqlalchemy` and `psycopg2-binary`).
+* Designed and implemented the SQLAlchemy model for `User` in `app/models/user.py` using SQLAlchemy 2.0 type mapping.
+* **Commit**: `57d311c updated requirement.txt` (merging dependencies) and user-implemented model.
+
+### Step 7 — Database Migrations with Alembic
+* Installed `alembic` and initialized the migration environment.
+* Configured `alembic/env.py` to fetch database URL dynamically from app settings and auto-detect models.
+* Generated and applied the initial migration script to create the `users` table in the database.
+* **Commit**: `feat: configure Alembic and run initial database migration` (User completed)
+
+### Step 8 — User Pydantic Schemas
+* Created the `app/schemas` package.
+* Designed validation and serialization contracts (`UserCreate`, `UserResponse`) for input and output data.
+* **Commit**: `feat: add user Pydantic schemas for request and response validation`
+
+### Step 9 — Security Utilities & DB Session Dependency
+* Installed the `bcrypt` library directly to handle hashing.
+* Implemented password hashing and verification functions in `app/core/security.py`.
+* Created the `get_db` yield-based dependency in `app/api/deps.py` to manage database session lifecycle.
+* **Commit**: `feat: add password hashing security helpers and db session dependency`
+
+### Step 10 — User Registration Endpoint
+* Created the user endpoint file `app/api/v1/endpoints/users.py`.
+* Implemented the `POST /` endpoint to register new users, hashing passwords and validating database duplicate constraints.
+* Registered the `/users` routes inside `app/api/v1/api.py`.
+* Verified application startup and manual API testing via `/docs` (Swagger UI).
+* **Commit**: `feat: implement user registration endpoint with password hashing`
+
 ---
 
 ## 3. Environment Variables
@@ -83,6 +117,10 @@ backend/
 | `fastapi` | High-performance, async-native web framework. |
 | `uvicorn[standard]` | Lightning-fast ASGI server to run FastAPI. |
 | `pydantic-settings` | Configuration management using environment variables. |
+| `sqlalchemy` | SQL Object-Relational Mapper (ORM). |
+| `psycopg2-binary` | PostgreSQL database adapter/driver for Python. |
+| `alembic` | Database migration framework. |
+| `bcrypt` | Hashing library for secure password storage. |
 
 ---
 
@@ -99,18 +137,25 @@ backend/
   }
   ```
 
+### User Registration
+* **Endpoint**: `POST /api/v1/users`
+* **Description**: Registers a new user, hashes the password, and saves the user record.
+* **Request Body**: `UserCreate` (email, password, full_name, etc.)
+* **Response**: `UserResponse` (id, email, full_name, is_active, created_at, updated_at)
+
 ---
 
 ## 6. Known Issues & Limitations
 
-1. **Missing SQL Dependencies**: Although SQLAlchemy is imported in `app/db/session.py`, `sqlalchemy` and a PostgreSQL driver (e.g., `psycopg2-binary`) have not yet been added to `requirements.txt` or installed in the virtual environment. 
-2. **Empty User Model**: The user model file `app/models/user.py` exists but is completely empty.
+* None currently. Core endpoints run and database integration works.
 
 ---
 
-## 7. Next Phase: Phase 1, Step 6 — Initial User Model
+## 7. Next Phase: Phase 1, Step 11 — Authentication & Token Generation (JWT)
 
 Planned tasks:
-- Install `sqlalchemy` and `psycopg2-binary` (or alternative PostgreSQL driver) to fix the missing dependencies.
-- Update `requirements.txt` to include database dependencies.
-- Design and implement the SQLAlchemy model for `User` in `app/models/user.py`.
+- Install `pyjwt` or `python-jose` for generating JSON Web Tokens.
+- Implement login endpoint (`POST /api/v1/login/access-token`) using OAuth2 password flow.
+- Add user authentication dependency (`get_current_user`) to secure future endpoints.
+
+
