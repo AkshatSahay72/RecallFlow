@@ -7,9 +7,9 @@ This document tracks the current state of RecallFlow development, outlining the 
 ## Project Status
 
 * **Current Phase**: Phase 2 — LLM & Conversational Agent Engine
-* **Current Step**: Step 15 — Install LangChain/LangGraph & Configure Groq API
+* **Current Step**: Step 16 — Create Chatbot Endpoint (`POST /api/v1/chat`)
 * **Overall Progress Summary**: 
-  Phase 1 is fully completed and verified. We have built a robust, secure FastAPI backend supporting User registration/auth, Tasks CRUD, and Events CRUD. We are now entering Phase 2 to build the AI Agent engine using LangChain/LangGraph and Groq.
+  We have successfully integrated LangChain and connected to the Groq API using the high-performance `llama-3.3-70b-versatile` model. Next, we will implement the endpoint `POST /api/v1/chat` that accepts user messages and returns the LLM's response.
 
 ---
 
@@ -219,7 +219,7 @@ backend/
 - [x] **Step 13.1**: Implement Calendar Event database model and run Alembic database migrations.
 - [x] **Step 13.2**: Implement Calendar Event Pydantic schemas and CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
 - [x] **Step 14**: Set up test suites and run quality assurance check.
-- [ ] **Step 15**: Install LangChain/LangGraph and configure Groq LLM API.
+- [x] **Step 15**: Install LangChain/LangGraph and configure Groq LLM API.
 - [ ] **Step 16**: Create the chatbot conversational API endpoint (`POST /api/v1/chat`).
 - [ ] **Step 17**: Implement Agent Tools (database CRUD interface for the LLM).
 - [ ] **Step 18**: Build session-based short-term conversation memory.

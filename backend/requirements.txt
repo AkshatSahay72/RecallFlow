@@ -7,3 +7,7 @@ Alembic
 bcrypt
 pyjwt
 python-multipart
+
+langchain-groq
+langchain-core
+langchain

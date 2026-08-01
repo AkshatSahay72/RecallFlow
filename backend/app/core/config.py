@@ -18,5 +18,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "dev_secret_key_change_me_in_production_1234567890"
     ALGORITHM: str = "HS256"
 
+    GROQ_API_KEY: str
+    LLM_MODEL: str = "llama-3.3-70b-versatile"
+
 
 settings = Settings()
