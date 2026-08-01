@@ -230,6 +230,40 @@ Important:
 - Never expose them as available features until they exist in the repository.
 - If implementation begins, move the completed portions into the appropriate sections of `workflow.md` (Dependencies, API Endpoints, Database, etc.).
 
+## RecallFlow Project Roadmap
+
+This roadmap defines the phases and steps required to build and integrate RecallFlow's features:
+
+### Phase 1: FastAPI Backend Foundation
+* **Steps 1-12 (Completed)**: Project initialization, minimal app, modular structure, settings manager, Neon database connectivity, User model, bcrypt hashing helpers, User registration endpoints, JWT login authentication, and full Tasks CRUD endpoints.
+* **Step 13 (Active)**: Implement database model, schemas, and CRUD endpoints for **Calendar Events** (Reminders/Meetings).
+* **Step 14**: Run final API quality check and setup test suite.
+
+### Phase 2: LLM & Conversational Agent Engine
+* **Step 15**: Install LangChain / LangGraph and integrate the Groq API (LLM).
+* **Step 16**: Create the conversational chat endpoint (`POST /api/v1/chat`).
+* **Step 17**: Implement **Agent Tools** (Python functions enabling the LLM to write to and read from your Tasks and Events database tables).
+* **Step 18**: Build short-term session conversation history so the chatbot remembers the context of the current chat.
+
+### Phase 3: Long-Term Semantic Memory (Vector DB)
+* **Step 19**: Enable the `pgvector` extension in your Neon PostgreSQL database.
+* **Step 20**: Implement text embedding services (using free HuggingFace / Cohere / OpenAI embedding APIs).
+* **Step 21**: Create the `Memory` database model to store semantic embeddings of diaries, facts, and memories.
+* **Step 22**: Connect the vector search tool to the conversational agent (RAG setup), allowing it to recall old facts (e.g., *"What did I plan to study last week?"*).
+
+### Phase 4: Web Dashboard Client (Flask + Jinja2 Templates)
+* **Step 23**: Initialize a Flask client in the `frontend` directory.
+* **Step 24**: Implement session authentication management (storing and using JWTs to communicate with the FastAPI backend).
+* **Step 25**: Build HTML templates (Jinja2, CSS, and basic JavaScript) to display Tasks, Calendar Events, and the Chatbot Interface.
+
+### Phase 5: Third-Party Integrations
+* **Step 26**: Integrate Google OAuth 2.0 consent flow.
+* **Step 27**: Implement two-way Google Calendar synchronization (mirroring chatbot events).
+* **Step 28**: Implement two-way Google Tasks synchronization (mirroring chatbot tasks).
+* **Step 29**: Create WhatsApp Webhook endpoint to routing messages directly to the LLM Agent.
+
+---
+
 ## Future Architecture Notes
 
 Document architectural ideas that have been intentionally postponed.
