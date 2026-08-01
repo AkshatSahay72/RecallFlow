@@ -16,7 +16,7 @@ def create_task(
     db:Session=Depends(get_db),
     current_user: User=Depends(get_current_user)
 ):
-    db_task = Task(**task_in.model_dump(),user_id=current_user.id)
+    db_task = Task(**task_in.model_dump(),owner_id=current_user.id)
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
@@ -30,6 +30,21 @@ def read_tasks(db: Session = Depends(get_db),
     return tasks
 
 @router.get("/{task_id}", response_model=TaskResponse)
+def read_task(
+    task_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    statement = select(Task).where(Task.id == task_id, Task.owner_id == current_user.id)
+    db_task = db.execute(statement).scalar_one_or_none()
+    if not db_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Task not found or access denied"
+        )
+    return db_task
+
+@router.put("/{task_id}", response_model=TaskResponse)
 def update_task(
     task_id: int, 
     task_in: TaskUpdate,
@@ -59,7 +74,7 @@ def delete_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    statement = select(Task).where(Task.id == task_id, Task.owner_id == current_user)
+    statement = select(Task).where(Task.id == task_id, Task.owner_id == current_user.id)
     db_task = db.execute(statement).scalar_one_or_none()
 
     if not db_task:

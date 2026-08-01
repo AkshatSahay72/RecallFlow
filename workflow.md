@@ -1,15 +1,15 @@
 # RecallFlow — Project Status & Workflow
 
-This document tracks the current state of RecallFlow development, outlining the architectural layout, implemented components, dependencies, environment settings, technical decisions, and next steps.
+This document tracks the current state of RecallFlow development, outlining the architectural layout, implemented components, decisions, and future plans.
 
 ---
 
 ## Project Status
 
 * **Current Phase**: Phase 1 — FastAPI Backend Foundation
-* **Current Step**: Step 12.2 — Pydantic Schemas & CRUD Routes for Tasks
+* **Current Step**: Step 13.1 — Database Model and Migration for Calendar Events
 * **Overall Progress Summary**: 
-  We have established the core user registration and authentication systems. We have designed the Task database model and successfully deployed the `tasks` table to Neon PostgreSQL via Alembic. Next, we will write the Task serialization schemas and implement CRUD endpoints.
+  We have implemented registration, login, JWT token auth, and full Task CRUD functionality. We are currently setting up the database structures for Calendar Events (Reminders/Meetings).
 
 ---
 
@@ -26,6 +26,7 @@ This document tracks the current state of RecallFlow development, outlining the 
 * **User Registration & Login Endpoints**: Routes to register, authenticate, and return JWTs.
 * **Pydantic Validation Schemas**: Schemas for user requests, responses, and JWTs.
 * **Permanent Token Utility**: JWT encoding utility with no expiration payload.
+* **Task CRUD Endpoints**: Secure routes to create, read, update, and delete tasks for authenticated users.
 
 ---
 
@@ -50,7 +51,7 @@ backend/
     │           ├── health.py # Health check controller
     │           ├── login.py  # JWT authentication controller
     │           ├── users.py  # User registration controller
-    │           └── tasks.py  # Task CRUD controller (Planned/In Progress)
+    │           └── task.py   # Task CRUD controller
     ├── core/
     │   ├── __init__.py
     │   ├── config.py     # Pydantic Settings configuration loading
@@ -67,7 +68,7 @@ backend/
         ├── __init__.py
         ├── token.py      # Pydantic JWT schemas
         ├── user.py       # Pydantic User validation schemas
-        └── task.py       # Pydantic Task validation schemas (Planned/In Progress)
+        └── task.py       # Pydantic Task validation schemas
 ```
 
 ### Module Responsibilities
@@ -100,6 +101,11 @@ backend/
 | `GET` | `/api/v1/health` | Service availability status. | **Active** |
 | `POST` | `/api/v1/users/` | Registers new users, hashing their passwords. | **Active** |
 | `POST` | `/api/v1/login/access-token` | Authenticates user credentials and returns JWT. | **Active** |
+| `POST` | `/api/v1/tasks/` | Creates a new task. | **Active** |
+| `GET` | `/api/v1/tasks/` | Lists all tasks for the logged-in user. | **Active** |
+| `GET` | `/api/v1/tasks/{task_id}` | Retrieves a single task. | **Active** |
+| `PUT` | `/api/v1/tasks/{task_id}` | Updates task parameters dynamically. | **Active** |
+| `DELETE` | `/api/v1/tasks/{task_id}` | Deletes a task. | **Active** |
 
 ---
 
@@ -156,6 +162,7 @@ backend/
 * `feat: add password hashing security helpers and db session dependency` (Implemented security helpers & deps)
 * `feat: implement login authentication endpoint and get_current_user dependency` (Created login endpoints & session verification)
 * `feat: add Task model and create database table migration` (Created Tasks schema & database tables)
+* `feat: implement Task Pydantic schemas and CRUD API endpoints` (Completed full task CRUD)
 
 ---
 
@@ -164,6 +171,7 @@ backend/
 * **Direct `bcrypt` Library Over `passlib`**: Chosen because `passlib` is currently unmaintained and triggers deprecation warnings in modern Python environments (like Python 3.13+). Using `bcrypt` directly ensures long-term framework compatibility.
 * **Permanent User Tokens (No JWT Expiration)**: Chosen because this application is meant to serve as a personal productivity assistant / WhatsApp chatbot. Eliminating token expiration avoids asking the user to repeatedly log back in, optimizing user experience at the cost of a small, acceptable security risk.
 * **Dynamic Configuration Loading for Alembic**: Instead of hardcoding connection strings in the `alembic.ini` file, Alembic was configured inside `alembic/env.py` to retrieve `DATABASE_URL` dynamically from the Pydantic configuration loader (`settings.DATABASE_URL`).
+* **Privacy-First Chat-Driven Google Integrations**: To protect user privacy, Google integrations are restricted strictly to syncing events and tasks created or modified via the RecallFlow chatbot interface. We support two-way synchronization (so changes in the Google apps reflect back in RecallFlow), but *only* for the specific events and tasks that were created/managed by RecallFlow. We intentionally avoid requesting scopes that access general Google Account details, emails, unrelated calendars, or personal files.
 
 ---
 
@@ -173,10 +181,22 @@ backend/
 
 ---
 
+## Planned Integrations
+
+* **Google Calendar (OAuth 2.0)**:
+  * Privacy boundary: Restrict OAuth scopes to avoid accessing any personal user details (profile details, unrelated events, or emails).
+  * Support two-way synchronization: Changes made to RecallFlow-managed events directly in Google Calendar will sync back to RecallFlow, and vice-versa.
+  * Store refresh tokens securely.
+* **Google Tasks**:
+  * Privacy boundary: Access limited strictly to syncing tasks created or modified via the chatbot.
+  * Support two-way synchronization: Marking a RecallFlow-managed task as completed (or editing it) directly in the Google Tasks app will sync back to RecallFlow, and vice-versa.
+
+---
+
 ## Planned Work
 
 - [x] **Step 11.2**: Fix known imports, implement `app/api/v1/endpoints/login.py`, and verify authentication via Swagger UI.
 - [x] **Step 12.1**: Implement Task database model and run Alembic database migrations.
-- [ ] **Step 12.2**: Implement Task Pydantic schemas and CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
+- [x] **Step 12.2**: Implement Task Pydantic schemas and CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
 - [ ] **Step 13**: Implement CRUD functions and endpoints for **Calendar Events** (Reminders/Meetings).
 - [ ] **Step 14**: Set up test suites and run quality assurance check.

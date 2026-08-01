@@ -205,6 +205,31 @@ Never restart from Phase 1 unless the repository actually requires it.
 
 Never assume completed work has been lost simply because the conversation history is unavailable.
 
+## Planned Integrations
+
+When documenting `workflow.md`, maintain a separate **Planned Integrations** section.
+
+This section is for integrations that have been intentionally designed but are not yet implemented.
+
+Examples include:
+
+- Google Calendar (OAuth 2.0)
+  - Privacy boundary: Restrict OAuth scopes to avoid accessing any personal details (profile details, unrelated events, or emails).
+  - Support two-way synchronization: Changes made to RecallFlow-managed events directly in Google Calendar will sync back to RecallFlow, and vice-versa.
+  - Store refresh tokens securely.
+
+- Google Tasks
+  - Privacy boundary: Access limited strictly to syncing tasks created or modified via the chatbot.
+  - Support two-way synchronization: Marking a RecallFlow-managed task as completed (or editing it) directly in the Google Tasks app will sync back to RecallFlow, and vice-versa.
+
+- Other future integrations...
+
+Important:
+- Planned Integrations are design goals only.
+- Never list them under "Implemented".
+- Never expose them as available features until they exist in the repository.
+- If implementation begins, move the completed portions into the appropriate sections of `workflow.md` (Dependencies, API Endpoints, Database, etc.).
+
 ## Future Architecture Notes
 
 Document architectural ideas that have been intentionally postponed.
