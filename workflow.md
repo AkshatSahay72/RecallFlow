@@ -6,10 +6,10 @@ This document tracks the current state of RecallFlow development, outlining the 
 
 ## Project Status
 
-* **Current Phase**: Phase 1 — FastAPI Backend Foundation
-* **Current Step**: Step 13.1 — Database Model and Migration for Calendar Events
+* **Current Phase**: Phase 2 — LLM & Conversational Agent Engine
+* **Current Step**: Step 15 — Install LangChain/LangGraph & Configure Groq API
 * **Overall Progress Summary**: 
-  We have implemented registration, login, JWT token auth, and full Task CRUD functionality. We are currently setting up the database structures for Calendar Events (Reminders/Meetings).
+  Phase 1 is fully completed and verified. We have built a robust, secure FastAPI backend supporting User registration/auth, Tasks CRUD, and Events CRUD. We are now entering Phase 2 to build the AI Agent engine using LangChain/LangGraph and Groq.
 
 ---
 
@@ -106,6 +106,11 @@ backend/
 | `GET` | `/api/v1/tasks/{task_id}` | Retrieves a single task. | **Active** |
 | `PUT` | `/api/v1/tasks/{task_id}` | Updates task parameters dynamically. | **Active** |
 | `DELETE` | `/api/v1/tasks/{task_id}` | Deletes a task. | **Active** |
+| `POST` | `/api/v1/events/` | Creates a new calendar event. | **Active** |
+| `GET` | `/api/v1/events/` | Lists all calendar events for the logged-in user. | **Active** |
+| `GET` | `/api/v1/events/{event_id}` | Retrieves a single calendar event. | **Active** |
+| `PUT` | `/api/v1/events/{event_id}` | Updates calendar event parameters dynamically. | **Active** |
+| `DELETE` | `/api/v1/events/{event_id}` | Deletes a calendar event. | **Active** |
 
 ---
 
@@ -130,6 +135,19 @@ backend/
   * `description` (Text): Nullable.
   * `is_completed` (Boolean): Default `False`, non-nullable.
   * `due_date` (DateTime): Nullable.
+  * `owner_id` (Integer): Foreign key referencing `users.id`, non-nullable.
+  * `created_at` (DateTime): Server-default `func.now()`, non-nullable.
+  * `updated_at` (DateTime): Server-default `func.now()`, updates on change, non-nullable.
+* **Constraints**: Foreign key `owner_id` references `users.id` with `ondelete="CASCADE"`.
+
+### Table: `events`
+* **Columns**:
+  * `id` (Integer): Primary key, auto-increment, indexed.
+  * `title` (String 255): Non-nullable.
+  * `description` (Text): Nullable.
+  * `start_time` (DateTime): Non-nullable.
+  * `end_time` (DateTime): Non-nullable.
+  * `location` (String 255): Nullable.
   * `owner_id` (Integer): Foreign key referencing `users.id`, non-nullable.
   * `created_at` (DateTime): Server-default `func.now()`, non-nullable.
   * `updated_at` (DateTime): Server-default `func.now()`, updates on change, non-nullable.
@@ -198,5 +216,10 @@ backend/
 - [x] **Step 11.2**: Fix known imports, implement `app/api/v1/endpoints/login.py`, and verify authentication via Swagger UI.
 - [x] **Step 12.1**: Implement Task database model and run Alembic database migrations.
 - [x] **Step 12.2**: Implement Task Pydantic schemas and CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
-- [ ] **Step 13**: Implement CRUD functions and endpoints for **Calendar Events** (Reminders/Meetings).
-- [ ] **Step 14**: Set up test suites and run quality assurance check.
+- [x] **Step 13.1**: Implement Calendar Event database model and run Alembic database migrations.
+- [x] **Step 13.2**: Implement Calendar Event Pydantic schemas and CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
+- [x] **Step 14**: Set up test suites and run quality assurance check.
+- [ ] **Step 15**: Install LangChain/LangGraph and configure Groq LLM API.
+- [ ] **Step 16**: Create the chatbot conversational API endpoint (`POST /api/v1/chat`).
+- [ ] **Step 17**: Implement Agent Tools (database CRUD interface for the LLM).
+- [ ] **Step 18**: Build session-based short-term conversation memory.

@@ -21,3 +21,4 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 
     tasks: Mapped[list["Task"]] = relationship("Task",back_populates="owner", cascade="all, delete-orphan")
+    events: Mapped[list["Event"]] = relationship("Event", back_populates="owner", cascade="all, delete-orphan")
