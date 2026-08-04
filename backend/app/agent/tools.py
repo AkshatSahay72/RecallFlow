@@ -7,6 +7,8 @@ from langchain_core.tools import tool
 from app.models.tasks import Task
 from app.models.events import Event
 from app.models.user import User
+from app.models.memory import Memory
+from app.core.embeddings import embeddings
 
 def get_user_tools(db: Session, current_user: User) -> List:
     """
@@ -209,7 +211,53 @@ def get_user_tools(db: Session, current_user: User) -> List:
         db.commit()
         return f"Successfully deleted event ID {event_id}."
 
+    @tool
+    async def save_memory(content: str) -> str:
+        """
+        Save a new fact, preference, detail, or memory about the user to help recall it later.
+        Use this tool when the user tells you something personal to remember, explicitly ask you to remember somethings.
+        """
+        try:
+            embedding_vector = embeddings.embed_query(content)
+        except Exception as e:
+            return f"Error generating embedding: {str(e)}"
+        
+        memory = Memory(
+            content=content,
+            embedding=embedding_vector
+            ,
+            owner_id = current_user.id
+        )
+        db.add(memory)
+        db.commit()
+        db.refresh(memory)
+        return f"Successfully saved memory (ID: {memory.id}): '{memory.content}'."
+
+    @tool
+    async def search_memories(query: str, limit: int=5) -> str:
+        """
+        Searches the user's saved memories and past preferences using semantic similarity.
+        Use this tool when the user asks a question about themselves, their preferences, past statements, or things they told you to remember.
+        """
+        try:
+            query_vector = embeddings.embed_query(query)
+        except Exception as e:
+            return f"Error generating query embedding: {str(e)}"        
+        statement = (select(Memory).where(Memory.owner_id == current_user.id).order_by(Memory.embedding.cosine_distance(query_vector)).limit(limit))
+        results = db.execute(statement).scalars().all()
+
+        if not results:
+            return "No matching memories found."
+        
+        formatted_memorieis = []
+        for index, m in enumerate(results, start=1):
+            formatted_memorieis.append(f"{index}. '{m.content}' (saved on: {m.created_at.strftime('%Y-%m-%d %H:%M')})")
+
+        return "\n".join(formatted_memorieis)
+
     return [create_task, list_tasks, update_task, delete_task, 
-            create_event, list_events, update_event, delete_event]
+            create_event, list_events, update_event, delete_event,
+            save_memory, search_memories]
+
 
             

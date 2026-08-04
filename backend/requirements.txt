@@ -10,3 +10,5 @@ python-multipart
 
 langchain-groq
 langchain-core
+langchain-huggingface
+pgvector

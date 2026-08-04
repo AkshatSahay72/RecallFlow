@@ -6,10 +6,10 @@ This document tracks the current state of RecallFlow development, outlining the 
 
 ## Project Status
 
-* **Current Phase**: Phase 3 — Long-Term Semantic Memory (Vector DB)
-* **Current Step**: Step 20 — Implement text embedding services (HuggingFace / Cohere / OpenAI)
+* **Current Phase**: Phase 4 — External Integrations & Frontend setup
+* **Current Step**: Step 23 — Design and plan Google Calendar / Google Tasks integration (OAuth 2.0)
 * **Overall Progress Summary**: 
-  We have successfully completed Phase 1, Phase 2, and the first step of Phase 3 (enabling `pgvector` in the database). Next, we will configure a text embedding model (Step 20) to convert user queries and database items into vector embeddings.
+  We have successfully completed Phase 3 by enabling `pgvector` (Step 19), configuring Hugging Face API Embeddings (Step 20), implementing the `Memory` database model (Step 21), and binding the `save_memory`/`search_memories` tools to our LangChain conversational agent (Step 22). The agent can now successfully remember and recall information. Next, we will plan Phase 4 (external Google integrations and/or frontend client setup).
 
 ---
 
@@ -224,6 +224,7 @@ backend/
 - [x] **Step 17**: Implement Agent Tools (database CRUD interface for the LLM).
 - [x] **Step 18**: Build session-based short-term conversation memory.
 - [x] **Step 19**: Enable the `pgvector` extension in Neon PostgreSQL.
-- [ ] **Step 20**: Implement text embedding services (HuggingFace / Cohere / OpenAI).
-- [ ] **Step 21**: Create the `Memory` database model to store semantic embeddings.
-- [ ] **Step 22**: Connect the vector search tool to the conversational agent (RAG).
+- [x] **Step 20**: Implement text embedding services (HuggingFace / Cohere / OpenAI).
+- [x] **Step 21**: Create the `Memory` database model to store semantic embeddings.
+- [x] **Step 22**: Connect the vector search tool to the conversational agent (RAG).
+- [ ] **Step 23**: Design and plan Google Calendar / Google Tasks integration (OAuth 2.0).

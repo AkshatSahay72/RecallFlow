@@ -1,3 +1,4 @@
+from app.models.tasks import Task
 from sqlalchemy import Nullable
 from operator import index
 from datetime import datetime
@@ -22,3 +23,4 @@ class User(Base):
 
     tasks: Mapped[list["Task"]] = relationship("Task",back_populates="owner", cascade="all, delete-orphan")
     events: Mapped[list["Event"]] = relationship("Event", back_populates="owner", cascade="all, delete-orphan")
+    memories: Mapped[list["Memory"]] = relationship("Memory", back_populates="owner", cascade="all, delete-orphan")

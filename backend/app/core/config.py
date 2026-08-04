@@ -21,5 +21,9 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str
     LLM_MODEL: str = "llama-3.3-70b-versatile"
 
+    HUGGINGFACEHUB_API_TOKEN: str
+    EMBEDDING_MODEL: str = "mixedbread-ai/mxbai-embed-large-v1"
+
+
 
 settings = Settings()

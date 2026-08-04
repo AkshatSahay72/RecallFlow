@@ -4,6 +4,7 @@ from pathlib import Path
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+import pgvector
 
 from alembic import context
 
@@ -15,6 +16,7 @@ from app.db.base import Base
 from app.models.user import User  # Must import models to register them with Base
 from app.models.tasks import Task  # Must import models to register them with Base
 from app.models.events import Event  # Must import models to register them with Base
+from app.models.memory import Memory
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
