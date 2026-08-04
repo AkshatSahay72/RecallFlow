@@ -458,14 +458,29 @@ button.link:hover {
   body {
     font-size: 14px;
   }
+  .app-container {
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
   .sidebar {
     display: none;
   }
   .mobile-header {
     display: flex;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    flex-shrink: 0;
   }
   .bottom-nav {
     display: flex;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    flex-shrink: 0;
   }
   .mobile-fab {
     display: flex;
@@ -474,12 +489,16 @@ button.link:hover {
     display: none;
   }
   .main-wrapper {
-    height: calc(100vh - var(--header-height) - 56px);
-    margin-top: var(--header-height);
-    margin-bottom: 56px;
+    flex-grow: 1;
+    height: 0; /* Let flexbox calculate remaining height strictly */
+    margin: 0;
+    overflow: hidden;
   }
   .main-content {
     padding: 16px;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .grid-2, .grid-3 {
     grid-template-columns: 1fr;
