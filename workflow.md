@@ -7,9 +7,9 @@ This document tracks the current state of RecallFlow development, outlining the 
 ## Project Status
 
 * **Current Phase**: Phase 3 — Long-Term Semantic Memory (Vector DB)
-* **Current Step**: Step 19 — Enable the `pgvector` extension in Neon PostgreSQL
+* **Current Step**: Step 20 — Implement text embedding services (HuggingFace / Cohere / OpenAI)
 * **Overall Progress Summary**: 
-  We have successfully completed Phase 1 (Backend Foundation) and Phase 2 (LLM & Conversational Agent Engine with Async Tools and Memory Checkpointer). Next, we will proceed to Phase 3 to build long-term semantic memory. First, we will enable the `pgvector` extension in our Neon PostgreSQL database.
+  We have successfully completed Phase 1, Phase 2, and the first step of Phase 3 (enabling `pgvector` in the database). Next, we will configure a text embedding model (Step 20) to convert user queries and database items into vector embeddings.
 
 ---
 
@@ -223,7 +223,7 @@ backend/
 - [x] **Step 16**: Create the chatbot conversational API endpoint (`POST /api/v1/chat`).
 - [x] **Step 17**: Implement Agent Tools (database CRUD interface for the LLM).
 - [x] **Step 18**: Build session-based short-term conversation memory.
-- [ ] **Step 19**: Enable the `pgvector` extension in Neon PostgreSQL.
+- [x] **Step 19**: Enable the `pgvector` extension in Neon PostgreSQL.
 - [ ] **Step 20**: Implement text embedding services (HuggingFace / Cohere / OpenAI).
 - [ ] **Step 21**: Create the `Memory` database model to store semantic embeddings.
 - [ ] **Step 22**: Connect the vector search tool to the conversational agent (RAG).
