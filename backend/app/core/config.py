@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -23,6 +24,10 @@ class Settings(BaseSettings):
 
     HUGGINGFACEHUB_API_TOKEN: str
     EMBEDDING_MODEL: str = "mixedbread-ai/mxbai-embed-large-v1"
+
+    GOOGLE_CLIENT_ID: Optional[str] = None 
+    GOOGLE_CLIENT_SECRET: Optional[str] = None 
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
 
 

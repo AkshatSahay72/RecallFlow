@@ -24,3 +24,4 @@ class User(Base):
     tasks: Mapped[list["Task"]] = relationship("Task",back_populates="owner", cascade="all, delete-orphan")
     events: Mapped[list["Event"]] = relationship("Event", back_populates="owner", cascade="all, delete-orphan")
     memories: Mapped[list["Memory"]] = relationship("Memory", back_populates="owner", cascade="all, delete-orphan")
+    google_auth: Mapped["UserGoogleAuth"] = relationship(back_populates="owner", uselist=False, cascade="all, delete-orphan")

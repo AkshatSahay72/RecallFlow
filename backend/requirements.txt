@@ -12,3 +12,6 @@ langchain-groq
 langchain-core
 langchain-huggingface
 pgvector
+
+google-auth-oauthlib
+google-api-python-client

@@ -7,9 +7,9 @@ This document tracks the current state of RecallFlow development, outlining the 
 ## Project Status
 
 * **Current Phase**: Phase 4 — External Integrations & Frontend setup
-* **Current Step**: Step 23 — Design and plan Google Calendar / Google Tasks integration (OAuth 2.0)
+* **Current Step**: Step 24 — Implement Google API credentials helper and token refresh logic
 * **Overall Progress Summary**: 
-  We have successfully completed Phase 3 by enabling `pgvector` (Step 19), configuring Hugging Face API Embeddings (Step 20), implementing the `Memory` database model (Step 21), and binding the `save_memory`/`search_memories` tools to our LangChain conversational agent (Step 22). The agent can now successfully remember and recall information. Next, we will plan Phase 4 (external Google integrations and/or frontend client setup).
+  We have successfully completed Step 23 by setting up the `user_google_auth` table and implementing the Google OAuth 2.0 endpoints with stateless state-token checks and PKCE validation. Users can now successfully link their Google Accounts. Next (Step 24), we will implement a credentials utility to automatically load and refresh these tokens when querying Google APIs.
 
 ---
 
@@ -227,4 +227,7 @@ backend/
 - [x] **Step 20**: Implement text embedding services (HuggingFace / Cohere / OpenAI).
 - [x] **Step 21**: Create the `Memory` database model to store semantic embeddings.
 - [x] **Step 22**: Connect the vector search tool to the conversational agent (RAG).
-- [ ] **Step 23**: Design and plan Google Calendar / Google Tasks integration (OAuth 2.0).
+- [x] **Step 23**: Design and plan Google Calendar / Google Tasks integration (OAuth 2.0).
+- [ ] **Step 24**: Implement Google API credentials helper and token refresh logic.
+- [ ] **Step 25**: Integrate Google Tasks API sync into the Task tools.
+- [ ] **Step 26**: Integrate Google Calendar API sync into the Event tools.

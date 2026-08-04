@@ -17,6 +17,8 @@ from app.models.user import User  # Must import models to register them with Bas
 from app.models.tasks import Task  # Must import models to register them with Base
 from app.models.events import Event  # Must import models to register them with Base
 from app.models.memory import Memory
+from app.models.google_auth import UserGoogleAuth
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
