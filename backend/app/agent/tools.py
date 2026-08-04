@@ -9,6 +9,7 @@ from app.models.events import Event
 from app.models.user import User
 from app.models.memory import Memory
 from app.core.embeddings import embeddings
+from app.services.google import get_google_service
 
 def get_user_tools(db: Session, current_user: User) -> List:
     """
@@ -40,7 +41,27 @@ def get_user_tools(db: Session, current_user: User) -> List:
         db.add(task)
         db.commit()
         db.refresh(task)
-        return f"Successfully created task '{task.title}' (ID: {task.id})."
+
+        sync_status = ""
+
+        service = get_google_service("tasks", "v1", db, current_user.id)
+        if service:
+            try:
+                google_task = {
+                    "title": title,
+                    "notes": description or ""
+                }
+                if parsed_due:
+                    google_task["due"] = parsed_due.isoformat()
+
+                res = service.tasks().insert(tasklist="@default", body=google_task).execute()
+                task.google_task_id = res.get("id")
+                db.commit()
+                sync_status = " (and synced to Google Tasks)"
+            except Exception as e:
+                sync_status = f" (failed to synced to Google Tasks: {str(e)})"
+
+        return f"Successfully created task '{task.title}' (ID: {task.id}) {sync_status}."
 
     @tool
     async def list_tasks() -> str:
@@ -92,7 +113,33 @@ def get_user_tools(db: Session, current_user: User) -> List:
         
         db.add(task)
         db.commit()
-        return f"Successfully updated task ID {task_id}."
+
+        sync_status = ""
+
+        if task.google_task_id:
+            service = get_google_service("tasks", "v1", db, current_user.id)
+            if service:
+                try:
+                    google_task = {}
+                    if title is not None:
+                        google_task["title"] = title
+                    if description is not None:
+                        google_task["notes"] = description
+                    if is_completed is not None:
+                        google_task["status"] = "completed" if is_completed else "needsAction"
+                    if due_date is not None:
+                        google_task["due"] = (task.due_date.isoformat() + "Z") if task.due_date else None
+
+                    service.tasks().update(
+                        tasklist="@default", task=task.google_task_id, body=google_task
+                    ).execute()
+
+                    sync_status = " (synced to Google Tasks)"
+
+                except Exception as e:
+                    sync_status = f" (sync to Google Tasks failed: {str(e)})"
+
+        return f"Successfully updated task ID {task_id}{sync_status}."
 
     @tool
     async def delete_task(task_id: int) -> str:
@@ -103,9 +150,23 @@ def get_user_tools(db: Session, current_user: User) -> List:
         task = db.execute(statement).scalar_one_or_none()
         if not task:
             return f"Error: Task with ID {task_id} not found."
+
+        sync_status = ""
+        if task.google_task_id:
+            service = get_google_service("tasks", "v1", db, current_user.id)
+
+            if service:
+                try:
+                    service.tasks().delete(tasklist="@default", task=task.google_task_id).execute()
+                    sync_status = " (and deleted from Google Tasks)"
+                except Exception as e:
+                    sync_status = f" (failed to delete from Google Tasks: {str(e)})"
+
         db.delete(task)
         db.commit()
-        return f"Successfully deleted task ID {task_id}"
+
+
+        return f"Successfully deleted task ID {task_id}{sync_status}."
     
     @tool
     async def create_event(
@@ -138,7 +199,36 @@ def get_user_tools(db: Session, current_user: User) -> List:
         db.add(event)
         db.commit()
         db.refresh(event)
-        return f"Successfully scheduled event '{event.title}' (ID: {event.id}, Start:{event.start_time})."
+
+        sync_status = ""
+
+        service = get_google_service("calendar", "v3", db, current_user.id)
+        if service:
+            try:
+                google_event = {
+                    "summary": title,
+                    "description": description or "",
+                    "location": location or "",
+                    "start": {
+                        "dateTime": start.isoformat() + "Z",
+                        "timeZone": "IST"
+                    },
+                    "end": {
+                        "dateTime": end.isoformat() + "Z",
+                        "timeZone": "IST"
+                    }
+                }
+
+                res = service.events().insert(calendarId="primary", body=google_event).execute()
+                event.google_event_id = res.get("id")
+                db.commit()
+                sync_status = " (and synced to Google Calendar)"
+            except Exception as e:
+                sync_status = f" (failed to sync to Google Calendar: {str(e)})"
+
+
+
+        return f"Successfully scheduled event '{event.title}' (ID: {event.id}, Start:{event.start_time}){sync_status}."
 
     @tool
     async def list_events() -> str:
@@ -195,7 +285,37 @@ def get_user_tools(db: Session, current_user: User) -> List:
         
         db.add(event)
         db.commit()
-        return f"Successfully updated event ID {event_id}."
+
+        sync_status = ""
+        if event.google_event_id:
+            service = get_google_service("calendar", "v3", db, current_user.id)
+            if service:
+                try:
+                    google_event = {
+                        "summary": event.title,
+                        "description": event.description or "",
+                        "location": event.location or "",
+                        "start": {
+                            "dateTime": event.start_time.isoformat() + "Z",
+                            "timeZone": "IST"
+                        },
+                        "end": {
+                            "dateTime": event.end_time.isoformat()+"Z",
+                            "timeZone": "IST"
+                        }
+                    }
+                    service.events().update(
+                        calendarId="primary",
+                        eventId=event.google_event_id,
+                        body=google_event
+                    ).execute()
+                    
+                    sync_status = " (and updated in Google Calendar)"
+                except Exception as e:
+                    sync_status = f" (failed to update in Google Calendar: {str(e)})"
+
+
+        return f"Successfully updated event ID {event_id}{sync_status}."
         
     @tool
     async def delete_event(event_id: int) -> str:
@@ -207,9 +327,19 @@ def get_user_tools(db: Session, current_user: User) -> List:
         if not event:
             return f"Error: Event with ID {event_id} not found."
 
+        sync_status = ""
+        if event.google_event_id:
+            service = get_google_service("calendar", "v3", db, current_user.id)
+            if service:
+                try:
+                    service.events().delete(calendarId="primary", eventId=event.google_event_id).execute()
+                    sync_status = " (and deleted from Google Calendar)"
+                except Exception as e:
+                    sync_status = f" (failed to delete from Google Calendar: {str(e)})"
+
         db.delete(event)
         db.commit()
-        return f"Successfully deleted event ID {event_id}."
+        return f"Successfully deleted event ID {event_id}{sync_status}."
 
     @tool
     async def save_memory(content: str) -> str:

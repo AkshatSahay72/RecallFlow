@@ -13,6 +13,8 @@ class Task(Base):
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    google_task_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     owner: Mapped["User"] = relationship(back_populates="tasks")

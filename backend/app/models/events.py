@@ -15,6 +15,8 @@ class Event(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
+    google_event_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     owner: Mapped["User"] = relationship(back_populates="events")

@@ -6,10 +6,10 @@ This document tracks the current state of RecallFlow development, outlining the 
 
 ## Project Status
 
-* **Current Phase**: Phase 4 — External Integrations & Frontend setup
-* **Current Step**: Step 24 — Implement Google API credentials helper and token refresh logic
+* **Current Phase**: Phase 5 — Client-Side Chat Dashboard (Frontend App)
+* **Current Step**: Step 28 — Implement state management, API service bindings, and router
 * **Overall Progress Summary**: 
-  We have successfully completed Step 23 by setting up the `user_google_auth` table and implementing the Google OAuth 2.0 endpoints with stateless state-token checks and PKCE validation. Users can now successfully link their Google Accounts. Next (Step 24), we will implement a credentials utility to automatically load and refresh these tokens when querying Google APIs.
+  We have successfully initialized the React+Vite TS scaffolding inside the `frontend` folder with environment variables and our base CSS reset. Now, we will implement the API service bindings, authentication session state manager, and routing logic (Step 28).
 
 ---
 
@@ -228,6 +228,9 @@ backend/
 - [x] **Step 21**: Create the `Memory` database model to store semantic embeddings.
 - [x] **Step 22**: Connect the vector search tool to the conversational agent (RAG).
 - [x] **Step 23**: Design and plan Google Calendar / Google Tasks integration (OAuth 2.0).
-- [ ] **Step 24**: Implement Google API credentials helper and token refresh logic.
-- [ ] **Step 25**: Integrate Google Tasks API sync into the Task tools.
-- [ ] **Step 26**: Integrate Google Calendar API sync into the Event tools.
+- [x] **Step 24**: Implement Google API credentials helper and token refresh logic.
+- [x] **Step 25**: Integrate Google Tasks API sync into the Task tools.
+- [x] **Step 26**: Integrate Google Calendar API sync into the Event tools.
+- [x] **Step 27**: Initialize and bootstrap the frontend React application.
+- [ ] **Step 28**: Implement state management, API service bindings, and router.
+- [ ] **Step 29**: Create dashboard views (Chat, Tasks checklist, Calendar sync views).
