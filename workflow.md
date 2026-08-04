@@ -9,7 +9,7 @@ This document tracks the current state of RecallFlow development, outlining the 
 * **Current Phase**: Phase 5 — Client-Side Chat Dashboard (Frontend App) (COMPLETED)
 * **Current Step**: Done
 * **Overall Progress Summary**: 
-  We have successfully designed and built the entire client-side React + Vite dashboard application inside the `frontend/` directory. It contains responsive layout structures (desktop sidebar and mobile bottom navigation with floating compose), stateful service bindings for the Auth, Tasks, Events, and Chat agent endpoints, and a neutral developer-centric custom CSS system. The static bundle compiles successfully.
+  We have successfully designed and built the entire client-side React + Vite dashboard application inside the `frontend/` directory. It contains responsive layout structures (desktop sidebar and mobile bottom navigation with floating compose), stateful service bindings for the Auth, Tasks, Events, and Chat agent endpoints, and a neutral developer-centric custom CSS system. The static bundle compiles successfully. We also added a `vercel.json` rewrite configuration and set up an automatic 4-minute keep-alive ping to the backend `/health` endpoint to prevent Render Free tier services from sleeping.
 
 ---
 
