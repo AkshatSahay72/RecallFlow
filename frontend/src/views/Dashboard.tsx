@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listTasks } from '../services/tasks';
 import { listEvents } from '../services/events';
 import type { Task, CalendarEvent } from '../types';
+import { formatDate } from '../utils/date';
 
 interface DashboardProps {
   onNavigate: (view: string) => void;
@@ -87,7 +88,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               {pendingTasks.map(t => (
                 <li key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
                   <span>• {t.title}</span>
-                  {t.due_date && <span className="mono text-muted" style={{ fontSize: '10px' }}>{new Date(t.due_date).toLocaleDateString()}</span>}
+                  {t.due_date && <span className="mono text-muted" style={{ fontSize: '10px' }}>{formatDate(t.due_date)}</span>}
                 </li>
               ))}
             </ul>
@@ -105,7 +106,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           ) : (
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {upcomingEvents.map(e => {
-                const dateStr = new Date(e.start_time).toLocaleDateString();
+                const dateStr = formatDate(e.start_time);
                 const timeStr = new Date(e.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 return (
                   <li key={e.id} style={{ display: 'flex', flexDirection: 'column', fontSize: '12px' }}>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { listTasks, createTask, updateTask, deleteTask } from '../services/tasks';
 import type { Task } from '../types';
+import { formatDate } from '../utils/date';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -136,7 +137,7 @@ export default function Tasks() {
                   <span style={{ fontSize: '13px' }}>{t.title}</span>
                   {t.due_date && (
                     <span className="mono text-muted" style={{ fontSize: '10px', marginLeft: '10px' }}>
-                      Due: {new Date(t.due_date).toLocaleDateString()}
+                      Due: {formatDate(t.due_date)}
                     </span>
                   )}
                   {t.google_task_id && (
