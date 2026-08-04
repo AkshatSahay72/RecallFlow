@@ -83,7 +83,7 @@ export default function App() {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentView} />;
       case 'chat':
-        return <Chat />;
+        return <Chat userEmail={userEmail} />;
       case 'memories':
         return <MemoryPage />;
       case 'calendar':

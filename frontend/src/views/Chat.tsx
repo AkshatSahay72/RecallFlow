@@ -2,7 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { chatWithAgent } from '../services/chat';
 import type { ChatMessage } from '../types';
 
-export default function Chat() {
+interface ChatProps {
+  userEmail: string | null;
+}
+
+export default function Chat({ userEmail }: ChatProps) {
+  // Derive a display name from email: "akshat@gmail.com" → "Akshat"
+  const userName = userEmail
+    ? userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1)
+    : 'You';
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -16,10 +25,10 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
-    "What are my tasks?",
-    "Schedule a meeting tomorrow at 3 PM",
-    "Remember that my flight leaves at 8 PM on Thursday",
-    "What do you remember about my preferences?"
+    { label: 'My tasks', query: 'What are my tasks?' },
+    { label: 'Schedule meeting', query: 'Schedule a meeting tomorrow at 3 PM' },
+    { label: 'Save a memory', query: 'Remember that my flight leaves at 8 PM on Thursday' },
+    { label: 'My preferences', query: 'What do you remember about my preferences?' }
   ];
 
   const scrollToBottom = () => {
@@ -99,7 +108,7 @@ export default function Chat() {
           <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="mono" style={{ fontWeight: 600, fontSize: '11px', color: msg.sender === 'user' ? 'var(--accent)' : 'var(--text-secondary)' }}>
-                {msg.sender === 'user' ? 'user@recallflow:~$' : 'system@recallflow:~$'}
+                {msg.sender === 'user' ? userName : 'RecallFlow'}
               </span>
               <span className="mono text-muted" style={{ fontSize: '9px' }}>{msg.timestamp}</span>
             </div>
@@ -108,7 +117,7 @@ export default function Chat() {
         ))}
         {loading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <span className="mono text-muted" style={{ fontWeight: 600, fontSize: '11px' }}>system@recallflow:~$</span>
+            <span className="mono text-muted" style={{ fontWeight: 600, fontSize: '11px' }}>RecallFlow</span>
             <div className="mono text-muted" style={{ paddingLeft: '12px', fontSize: '13px' }}>Thinking...</div>
           </div>
         )}
@@ -117,18 +126,24 @@ export default function Chat() {
 
       {/* Input container */}
       <div className="chat-input-container">
-        {/* Suggested Actions as commands */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '10px', alignItems: 'center' }}>
-          <span className="text-muted mono" style={{ fontSize: '10px' }}>Quick Commands:</span>
+        {/* Quick command buttons */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
           {suggestions.map((s, i) => (
             <button
               key={i}
-              className="link mono"
-              style={{ fontSize: '11px', background: 'none', border: 'none', padding: 0 }}
-              onClick={() => handleSend(s)}
+              onClick={() => handleSend(s.query)}
               disabled={loading}
+              style={{
+                fontSize: '11px',
+                padding: '4px 10px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+                borderRadius: '3px',
+                cursor: 'pointer',
+              }}
             >
-              /{s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '-')}
+              {s.label}
             </button>
           ))}
         </div>
@@ -139,7 +154,7 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Send a command or query to RecallFlow..."
+            placeholder="Ask RecallFlow anything..."
             disabled={loading}
           />
           <button
@@ -148,7 +163,7 @@ export default function Chat() {
             disabled={loading || !input.trim()}
             style={{ height: '38px' }}
           >
-            Execute
+            Send
           </button>
         </div>
       </div>
