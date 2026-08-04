@@ -22,6 +22,7 @@ class EventUpdate(BaseModel):
 class EventResponse(EventBase):
     id: int
     owner_id: int
+    google_event_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

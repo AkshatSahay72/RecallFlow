@@ -47,7 +47,7 @@ def get_google_credentials(
             return None
     return creds
 
-def get_google_services(service_name: str, version: str, db: Session, user_id: int):
+def get_google_service(service_name: str, version: str, db: Session, user_id: int):
     """
     Builds and returns a Google API service client (e.g. 'calendar', 'tasks').
     Return None if the user has not linked their Google account.

@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 class TaskBase(BaseModel):
     title: str
-    description: str = None
+    description: Optional[str] = None
     is_completed: bool = False
     due_date: Optional[datetime] = None
 
@@ -20,6 +20,7 @@ class TaskUpdate(BaseModel):
 class TaskResponse(TaskBase):
     id: int
     owner_id: int
+    google_task_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime 
 

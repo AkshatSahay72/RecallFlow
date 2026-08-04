@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = None 
     GOOGLE_CLIENT_SECRET: Optional[str] = None 
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
-
-
+    
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
 settings = Settings()
