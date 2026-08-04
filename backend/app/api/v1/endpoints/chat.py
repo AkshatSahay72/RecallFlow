@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 from langchain.agents import create_agent
+from langgraph.checkpoint.memory import MemorySaver
 
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
@@ -19,16 +20,17 @@ llm = ChatGroq(
     temperature=0.1
 )
 
+# Instantiate the in-memory checkpointer for session state persistence
+memory_checkpointer = MemorySaver()
+
 @router.post("/", response_model=ChatResponse, status_code=status.HTTP_200_OK)
 async def chat_with_agent(
     payload: ChatRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Instantiate tools bound to the active user session
     tools = get_user_tools(db, current_user)
 
-    # 2. Construct dynamic system prompt
     current_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     system_prompt = (
         "You are RecallFlow, a premium, hyper-intelligent, and proactive personal productivity assistant. "
@@ -40,18 +42,18 @@ async def chat_with_agent(
         f"Today's date and time is: {current_time_str}."
     )
 
-    # 3. Create the agent graph using the pre-installed langchain package
     agent = create_agent(
         model=llm,
         tools=tools,
-        system_prompt=system_prompt
+        system_prompt=system_prompt,
+        checkpointer=memory_checkpointer
     )
 
-    # 4. Invoke the agent graph asynchronously
-    response = await agent.ainvoke({
-        "messages": [HumanMessage(content=payload.message)]
-    })
+    config = {"configurable": {"thread_id": f"user_{current_user.id}_chat"}}
+    response = await agent.ainvoke(
+        {"messages": [HumanMessage(content=payload.message)]},
+        config=config
+    )
 
-    # 5. Extract the final AI response message
     final_message = response["messages"][-1]
     return ChatResponse(response=final_message.content)
