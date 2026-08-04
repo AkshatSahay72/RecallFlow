@@ -39,22 +39,21 @@ export default function App() {
     }
   }, [theme]);
 
-  // Keep-alive ping to Render backend health endpoint every 4 minutes
+  // Keep-alive ping to Render backend every 4 minutes to prevent cold starts.
+  // Runs regardless of login state. Uses no-cors to avoid preflight issues.
   useEffect(() => {
-    const pingBackend = async () => {
-      try {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-        await fetch(`${API_BASE_URL}/api/v1/health`);
-        console.log('RecallFlow Backend Health Ping successful');
-      } catch (e) {
-        console.error('RecallFlow Backend Health Ping failed:', e);
-      }
+    const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const PING_INTERVAL = 4 * 60 * 1000; // 4 minutes
+
+    const ping = () => {
+      fetch(`${BACKEND_URL}/api/v1/health`, { mode: 'no-cors' })
+        .then(() => console.log(`[KeepAlive] Pinged ${BACKEND_URL} at ${new Date().toLocaleTimeString()}`))
+        .catch(() => console.warn('[KeepAlive] Ping failed'));
     };
 
-    pingBackend();
-
-    const interval = setInterval(pingBackend, 240000);
-    return () => clearInterval(interval);
+    ping(); // immediate first ping
+    const id = setInterval(ping, PING_INTERVAL);
+    return () => clearInterval(id);
   }, []);
 
   const handleLoginSuccess = (newToken: string) => {

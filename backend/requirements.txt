@@ -13,6 +13,7 @@ langchain-core
 langchain-huggingface
 langchain
 pgvector
+numpy
 
 google-auth-oauthlib
 google-api-python-client
