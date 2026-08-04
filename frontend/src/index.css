@@ -38,6 +38,9 @@
   padding: 0;
 }
 
+html, body, #root {
+  height: 100%;
+}
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
@@ -130,7 +133,7 @@ button.link:hover {
 /* Layout system */
 .app-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
   width: 100vw;
   overflow: hidden;
 }
@@ -460,7 +463,7 @@ button.link:hover {
   }
   .app-container {
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
     width: 100vw;
   }
   .sidebar {

@@ -96,16 +96,20 @@ export default function Chat() {
       {/* Messages viewport */}
       <div className="chat-messages no-scrollbar">
         {messages.map(msg => (
-          <div key={msg.id} className={`chat-bubble ${msg.sender}`}>
-            <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
-            <div className="mono text-muted" style={{ fontSize: '9px', textAlign: 'right', marginTop: '6px' }}>
-              {msg.timestamp}
+          <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="mono" style={{ fontWeight: 600, fontSize: '11px', color: msg.sender === 'user' ? 'var(--accent)' : 'var(--text-secondary)' }}>
+                {msg.sender === 'user' ? 'user@recallflow:~$' : 'system@recallflow:~$'}
+              </span>
+              <span className="mono text-muted" style={{ fontSize: '9px' }}>{msg.timestamp}</span>
             </div>
+            <div style={{ whiteSpace: 'pre-wrap', paddingLeft: '12px', fontSize: '13px' }}>{msg.text}</div>
           </div>
         ))}
         {loading && (
-          <div className="chat-bubble agent text-muted">
-            Thinking...
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span className="mono text-muted" style={{ fontWeight: 600, fontSize: '11px' }}>system@recallflow:~$</span>
+            <div className="mono text-muted" style={{ paddingLeft: '12px', fontSize: '13px' }}>Thinking...</div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -113,16 +117,18 @@ export default function Chat() {
 
       {/* Input container */}
       <div className="chat-input-container">
-        {/* Suggested Actions */}
-        <div className="chat-suggestions">
+        {/* Suggested Actions as commands */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '10px', alignItems: 'center' }}>
+          <span className="text-muted mono" style={{ fontSize: '10px' }}>Quick Commands:</span>
           {suggestions.map((s, i) => (
             <button
               key={i}
-              className="suggestion-btn"
+              className="link mono"
+              style={{ fontSize: '11px', background: 'none', border: 'none', padding: 0 }}
               onClick={() => handleSend(s)}
               disabled={loading}
             >
-              {s}
+              /{s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '-')}
             </button>
           ))}
         </div>
@@ -133,7 +139,7 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Send a message to RecallFlow..."
+            placeholder="Send a command or query to RecallFlow..."
             disabled={loading}
           />
           <button
@@ -142,7 +148,7 @@ export default function Chat() {
             disabled={loading || !input.trim()}
             style={{ height: '38px' }}
           >
-            Send
+            Execute
           </button>
         </div>
       </div>

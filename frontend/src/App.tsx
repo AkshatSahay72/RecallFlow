@@ -10,7 +10,7 @@ import Settings from './views/Settings';
 import Sidebar from './components/Navigation/Sidebar';
 import BottomNav from './components/Navigation/BottomNav';
 import { getEmailFromToken } from './services/auth';
-import { Settings as SettingsIcon, LogOut, MessageSquare } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut } from 'lucide-react';
 import './App.css';
 
 export default function App() {
@@ -138,13 +138,6 @@ export default function App() {
           {renderView()}
         </main>
       </div>
-
-      {/* Floating Compose action button (Mobile Only) */}
-      {currentView !== 'chat' && (
-        <button className="mobile-fab" onClick={() => setCurrentView('chat')}>
-          <MessageSquare size={20} />
-        </button>
-      )}
 
       {/* Mobile Bottom navigation bar */}
       <BottomNav currentView={currentView} onNavigate={setCurrentView} />
