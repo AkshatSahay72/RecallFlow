@@ -211,11 +211,11 @@ def get_user_tools(db: Session, current_user: User) -> List:
                     "location": location or "",
                     "start": {
                         "dateTime": start.isoformat() + "Z",
-                        "timeZone": "IST"
+                        "timeZone": "Asia/Kolkata"
                     },
                     "end": {
                         "dateTime": end.isoformat() + "Z",
-                        "timeZone": "IST"
+                        "timeZone": "Asia/Kolkata"
                     }
                 }
 
@@ -297,11 +297,11 @@ def get_user_tools(db: Session, current_user: User) -> List:
                         "location": event.location or "",
                         "start": {
                             "dateTime": event.start_time.isoformat() + "Z",
-                            "timeZone": "IST"
+                            "timeZone": "Asia/Kolkata"
                         },
                         "end": {
                             "dateTime": event.end_time.isoformat()+"Z",
-                            "timeZone": "IST"
+                            "timeZone": "Asia/Kolkata"
                         }
                     }
                     service.events().update(
