@@ -12,6 +12,7 @@ langchain-groq
 langchain-core
 langchain-huggingface
 langchain
+langgraph
 pgvector
 numpy
 

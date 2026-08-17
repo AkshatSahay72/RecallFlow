@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     GROQ_API_KEY: str
-    LLM_MODEL: str = "llama-3.3-70b-versatile"
+    LLM_MODEL: str = "qwen/qwen3.6-27b"
 
     HUGGINGFACEHUB_API_TOKEN: str
     EMBEDDING_MODEL: str = "mixedbread-ai/mxbai-embed-large-v1"
