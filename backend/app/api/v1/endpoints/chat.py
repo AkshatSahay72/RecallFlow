@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from langchain_groq import ChatGroq
@@ -39,6 +40,7 @@ async def chat_with_agent(
         "Always use these tools when asked to execute task or schedule actions. "
         "If a tool call fails, inform the user about the issue clearly. "
         "Keep your final responses elegant, clear, and user-centric.\n"
+        "CRITICAL: Do not use markdown syntax (such as double asterisks '**' for bold, single asterisks '*' for italics, markdown titles like '#', or bullet dashes '-') in your responses. Always use clean plain text, with regular spacing and standard text lists (e.g. 1. or 2.) for structure.\n"
         f"Today's date and time is: {current_time_str}."
     )
 
@@ -56,4 +58,5 @@ async def chat_with_agent(
     )
 
     final_message = response["messages"][-1]
-    return ChatResponse(response=final_message.content)
+    cleaned_content = re.sub(r"<think>.*?</think>", "", final_message.content, flags=re.DOTALL).strip()
+    return ChatResponse(response=cleaned_content)
