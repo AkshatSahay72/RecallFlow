@@ -25,7 +25,7 @@ def get_google_credentials(
     creds = Credentials(
         token=db_auth.access_token,
         refresh_token=db_auth.refresh_token,
-        token_url="https://oauth2.googleapis.com/token",
+        token_uri="https://oauth2.googleapis.com/token",
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,
         expiry=db_auth.token_expiry
