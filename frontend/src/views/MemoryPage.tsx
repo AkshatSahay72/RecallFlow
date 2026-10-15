@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import EmptyState from '../components/common/EmptyState';
+import ConfirmModal from '../components/common/ConfirmModal';
+import Toast, { type ToastMessage } from '../components/common/Toast';
+import { Brain, Plus, Search, Trash2, X } from 'lucide-react';
 
 export default function MemoryPage() {
   const [memories, setMemories] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [newMemory, setNewMemory] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('local_memories');
     if (stored) {
-      setMemories(JSON.parse(stored));
+      try {
+        const parsed = JSON.parse(stored);
+        setMemories(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setMemories([]);
+      }
+    } else {
+      setMemories([]);
     }
   }, []);
 
@@ -21,82 +33,147 @@ export default function MemoryPage() {
     localStorage.setItem('local_memories', JSON.stringify(updated));
     setMemories(updated);
     setNewMemory('');
-    setSuccessMsg('Memory stored successfully!');
-    setTimeout(() => setSuccessMsg(''), 3000);
+    setToast({
+      id: Date.now().toString(),
+      type: 'success',
+      message: 'Memory saved to archive.'
+    });
   };
 
-  const handleDelete = (indexToDelete: number) => {
-    const updated = memories.filter((_, idx) => idx !== indexToDelete);
+  const confirmForget = () => {
+    if (deleteIndex === null) return;
+    const targetIdx = deleteIndex;
+    const updated = memories.filter((_, idx) => idx !== targetIdx);
     localStorage.setItem('local_memories', JSON.stringify(updated));
     setMemories(updated);
+    setDeleteIndex(null);
+    setToast({
+      id: Date.now().toString(),
+      type: 'success',
+      message: 'Memory forgotten.'
+    });
   };
 
-  const filteredMemories = memories.filter(m => 
+  const filteredMemories = memories.filter(m =>
     m.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
-      <h1 style={{ marginBottom: '8px' }}>Memory Archive</h1>
-      <p className="text-muted" style={{ marginBottom: '24px' }}>
-        Semantic long-term facts stored about you. The AI uses these vectors to answer queries.
-      </p>
+      <div style={{ marginBottom: '20px' }}>
+        <h1 style={{ marginBottom: '4px' }}>Memory Archive</h1>
+        <p className="text-muted" style={{ margin: 0 }}>
+          Semantic long-term facts stored about you. RecallFlow uses these memories to personalize answers.
+        </p>
+      </div>
 
-      {/* Quick Add Form */}
+      {/* Record a Fact Panel */}
       <div className="panel" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Record a Fact</h2>
-        <form onSubmit={handleAddMemory} style={{ display: 'flex', gap: '8px' }}>
-          <input
-            type="text"
-            value={newMemory}
-            onChange={(e) => setNewMemory(e.target.value)}
-            placeholder="E.g., I have a dog named Rusty who loves chicken snacks."
-            required
-            style={{ flexGrow: 1 }}
-          />
-          <button type="submit" className="primary">Save Fact</button>
+        <h2 style={{ fontSize: '15px', marginBottom: '10px' }}>Record a Fact</h2>
+        <form onSubmit={handleAddMemory} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ flexGrow: 1, minWidth: '240px' }}>
+            <label htmlFor="new-memory-input" className="sr-only">Memory fact description</label>
+            <input
+              id="new-memory-input"
+              type="text"
+              value={newMemory}
+              onChange={(e) => setNewMemory(e.target.value)}
+              placeholder="E.g., I prefer morning workouts; my primary programming stack is React and Python."
+              required
+            />
+          </div>
+          <button type="submit" className="primary" disabled={!newMemory.trim()}>
+            <Plus size={16} />
+            <span>Save Fact</span>
+          </button>
         </form>
-        {successMsg && (
-          <div style={{ color: 'var(--success)', fontSize: '11px', marginTop: '6px' }}>{successMsg}</div>
-        )}
       </div>
 
       {/* Search and Filters */}
-      <div style={{ marginBottom: '16px' }}>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter memories by keyword..."
-          style={{ width: '100%' }}
-        />
+      <div style={{ position: 'relative', marginBottom: '20px' }}>
+        <label htmlFor="search-memory-input" className="sr-only">Filter memories</label>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-secondary)' }} />
+          <input
+            id="search-memory-input"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search stored memory facts..."
+            style={{ paddingLeft: '36px', paddingRight: search ? '36px' : '12px' }}
+          />
+          {search && (
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setSearch('')}
+              aria-label="Clear search"
+              style={{ position: 'absolute', right: '8px' }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Timeline View */}
+      {/* Memories Timeline View */}
+      <h2 style={{ fontSize: '16px', marginBottom: '14px' }}>
+        {search ? `Search Results (${filteredMemories.length})` : `Archived Memories (${memories.length})`}
+      </h2>
+
       {filteredMemories.length === 0 ? (
-        <p className="text-muted">No matching memories found.</p>
+        <EmptyState
+          icon={<Brain size={32} />}
+          title={search ? 'No Matching Memories' : 'No Memories Recorded Yet'}
+          description={
+            search
+              ? `No memories matched your query "${search}". Try different keywords or clear the search.`
+              : 'Record your personal preferences, project details, or facts above so RecallFlow remembers them.'
+          }
+          actionLabel={search ? 'Clear Search' : undefined}
+          onAction={search ? () => setSearch('') : undefined}
+        />
       ) : (
         <div className="timeline">
           {filteredMemories.map((m, idx) => (
             <div key={idx} className="timeline-item">
               <div className="timeline-dot" />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                 <div>
-                  <div className="timeline-meta mono">FACT ID: {idx + 1}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>{m}</div>
+                  <div className="timeline-meta mono">FACT #{idx + 1}</div>
+                  <div style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                    {m}
+                  </div>
                 </div>
                 <button
+                  type="button"
                   className="link danger"
-                  style={{ fontSize: '11px', color: 'var(--danger)', padding: 0 }}
-                  onClick={() => handleDelete(idx)}
+                  style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}
+                  onClick={() => setDeleteIndex(idx)}
+                  aria-label={`Forget fact: ${m}`}
                 >
-                  Forget
+                  <Trash2 size={13} />
+                  <span>Forget</span>
                 </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteIndex !== null}
+        title="Forget Memory Fact"
+        message="Are you sure you want to remove this fact from your memory archive? RecallFlow will no longer use it during chat conversations."
+        confirmLabel="Forget Fact"
+        isDanger={true}
+        onConfirm={confirmForget}
+        onCancel={() => setDeleteIndex(null)}
+      />
+
+      {/* Toast feedback */}
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

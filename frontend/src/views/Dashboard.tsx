@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { listTasks } from '../services/tasks';
 import { listEvents } from '../services/events';
 import type { Task, CalendarEvent } from '../types';
 import { formatDate } from '../utils/date';
+import LoadingState from '../components/common/LoadingState';
+import EmptyState from '../components/common/EmptyState';
+import { CheckSquare, Calendar, Brain, RefreshCw, MessageSquare } from 'lucide-react';
 
 interface DashboardProps {
   onNavigate: (view: string) => void;
@@ -11,110 +14,225 @@ interface DashboardProps {
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [memories, setMemories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Local storage used to mock memories since there is no backend GET memories endpoint
-  const [memories, setMemories] = useState<string[]>([]);
+  const loadDashboardData = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [loadedTasks, loadedEvents] = await Promise.all([
+        listTasks().catch(() => [] as Task[]),
+        listEvents().catch(() => [] as CalendarEvent[])
+      ]);
+      setTasks(loadedTasks);
+      setEvents(loadedEvents);
 
-  useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        const [loadedTasks, loadedEvents] = await Promise.all([
-          listTasks(),
-          listEvents()
-        ]);
-        setTasks(loadedTasks);
-        setEvents(loadedEvents);
-        
-        // Retrieve local mock memories saved during test or chat session
-        const stored = localStorage.getItem('local_memories');
-        if (stored) {
-          setMemories(JSON.parse(stored));
-        } else {
-          // Set initial defaults if none exist
-          const defaults = [
-            "My favorite coffee is Caramel Macchiato with extra espresso.",
-            "I need to sync calendar tasks on Fridays.",
-            "RecallFlow backend is hosted on Render, frontend on Vercel."
-          ];
-          localStorage.setItem('local_memories', JSON.stringify(defaults));
-          setMemories(defaults);
+      const stored = localStorage.getItem('local_memories');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setMemories(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setMemories([]);
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
+      } else {
+        setMemories([]);
       }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load dashboard data.';
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-
-    loadDashboardData();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
-  if (error) return <div style={{ color: 'var(--danger)' }}>Error: {error}</div>;
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
-  const pendingTasks = tasks.filter(t => !t.is_completed).slice(0, 5);
+  if (loading) {
+    return <LoadingState message="Loading your dashboard overview..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="panel" style={{ borderLeft: '3px solid var(--danger)' }}>
+        <h2 style={{ color: 'var(--danger)', marginBottom: '8px' }}>Unable to load dashboard data</h2>
+        <p className="text-muted" style={{ marginBottom: '16px' }}>{error}</p>
+        <button type="button" className="primary" onClick={loadDashboardData}>
+          <RefreshCw size={14} />
+          <span>Retry Connection</span>
+        </button>
+      </div>
+    );
+  }
+
+  const pendingTasks = tasks.filter(t => !t.is_completed);
+  const topPending = pendingTasks.slice(0, 5);
+
   const upcomingEvents = events
-    .filter(e => new Date(e.start_time) >= new Date())
+    .filter(e => {
+      try {
+        return new Date(e.start_time).getTime() >= Date.now() - 3600000;
+      } catch {
+        return true;
+      }
+    })
     .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
     .slice(0, 5);
 
   return (
     <div>
-      <h1 style={{ marginBottom: '16px' }}>Dashboard</h1>
-      
-      {/* Today's Summary */}
-      <div className="panel" style={{ borderLeft: '2px solid var(--accent)' }}>
-        <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Today's Overview</h2>
-        <p style={{ marginTop: '8px', lineHeight: 1.5, color: 'var(--text-primary)' }}>
-          You have <span className="mono" style={{ fontWeight: 600 }}>{tasks.filter(t => !t.is_completed).length}</span> pending tasks 
-          and <span className="mono" style={{ fontWeight: 600 }}>{events.length}</span> calendar events scheduled. 
-          Use the <button className="link" onClick={() => onNavigate('chat')}>Chat View</button> to tell RecallFlow to manage them for you.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div>
+          <h1 style={{ marginBottom: '4px' }}>Overview Dashboard</h1>
+          <p className="text-muted" style={{ margin: 0 }}>
+            Here is your daily activity, schedule agenda, and pending actions.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={loadDashboardData}
+          title="Refresh Dashboard"
+          aria-label="Refresh Dashboard"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          <RefreshCw size={16} />
+        </button>
+      </div>
+
+      {/* Overview Metric Banner */}
+      <div className="panel" style={{ borderLeft: '3px solid var(--accent)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '15px' }}>Today's Summary</h2>
+            <p style={{ marginTop: '6px', marginBottom: 0, lineHeight: 1.6 }}>
+              You have <strong style={{ color: 'var(--accent)' }}>{pendingTasks.length}</strong> pending task{pendingTasks.length === 1 ? '' : 's'} and{' '}
+              <strong style={{ color: 'var(--accent)' }}>{upcomingEvents.length}</strong> upcoming agenda item{upcomingEvents.length === 1 ? '' : 's'}.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => onNavigate('chat')}
+            style={{ fontSize: '12px' }}
+          >
+            <MessageSquare size={14} />
+            <span>Ask RecallFlow AI</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid-2">
-        {/* Pending Tasks */}
+        {/* Pending Tasks Panel */}
         <div className="panel">
-          <h2 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Pending Tasks</span>
-            <button className="link" style={{ fontSize: '11px' }} onClick={() => onNavigate('tasks')}>View all</button>
-          </h2>
-          {pendingTasks.length === 0 ? (
-            <p className="text-muted">No pending tasks.</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckSquare size={16} color="var(--accent)" />
+              <h2 style={{ margin: 0 }}>Pending Tasks ({pendingTasks.length})</h2>
+            </div>
+            <button
+              type="button"
+              className="link"
+              style={{ fontSize: '12px' }}
+              onClick={() => onNavigate('tasks')}
+            >
+              View all
+            </button>
+          </div>
+
+          {topPending.length === 0 ? (
+            <EmptyState
+              icon={<CheckSquare size={28} />}
+              title="No Pending Tasks"
+              description="You're all caught up! Create a new task or ask the AI to plan your day."
+              actionLabel="Add Task"
+              onAction={() => onNavigate('tasks')}
+            />
           ) : (
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {pendingTasks.map(t => (
-                <li key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                  <span>• {t.title}</span>
-                  {t.due_date && <span className="mono text-muted" style={{ fontSize: '10px' }}>{formatDate(t.due_date)}</span>}
+              {topPending.map(t => (
+                <li
+                  key={t.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '6px 0',
+                    borderBottom: '1px solid var(--border-subtle)'
+                  }}
+                >
+                  <span style={{ fontSize: '13px', fontWeight: 500 }}>{t.title}</span>
+                  {t.due_date && (
+                    <span className="mono text-muted" style={{ fontSize: '11px' }}>
+                      Due: {formatDate(t.due_date)}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Upcoming Events */}
+        {/* Upcoming Events Panel */}
         <div className="panel">
-          <h2 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Upcoming Agenda</span>
-            <button className="link" style={{ fontSize: '11px' }} onClick={() => onNavigate('calendar')}>View all</button>
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Calendar size={16} color="var(--accent)" />
+              <h2 style={{ margin: 0 }}>Upcoming Agenda ({upcomingEvents.length})</h2>
+            </div>
+            <button
+              type="button"
+              className="link"
+              style={{ fontSize: '12px' }}
+              onClick={() => onNavigate('calendar')}
+            >
+              View all
+            </button>
+          </div>
+
           {upcomingEvents.length === 0 ? (
-            <p className="text-muted">No upcoming events scheduled.</p>
+            <EmptyState
+              icon={<Calendar size={28} />}
+              title="Agenda Is Clear"
+              description="No upcoming events scheduled. Add a meeting or sync with Google Calendar."
+              actionLabel="Schedule Event"
+              onAction={() => onNavigate('calendar')}
+            />
           ) : (
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {upcomingEvents.map(e => {
                 const dateStr = formatDate(e.start_time);
-                const timeStr = new Date(e.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                let timeStr = '';
+                try {
+                  timeStr = new Date(e.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } catch {
+                  timeStr = '';
+                }
                 return (
-                  <li key={e.id} style={{ display: 'flex', flexDirection: 'column', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 500 }}>
+                  <li
+                    key={e.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '6px 0',
+                      borderBottom: '1px solid var(--border-subtle)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 500, fontSize: '13px' }}>
                       <span>{e.title}</span>
-                      <span className="mono text-muted" style={{ fontSize: '10px' }}>{dateStr} @ {timeStr}</span>
+                      <span className="mono text-muted" style={{ fontSize: '11px' }}>
+                        {dateStr} {timeStr && `@ ${timeStr}`}
+                      </span>
                     </div>
-                    {e.location && <div className="text-muted" style={{ fontSize: '11px' }}>Location: {e.location}</div>}
+                    {e.location && (
+                      <span className="text-muted" style={{ fontSize: '11px', marginTop: '2px' }}>
+                        📍 {e.location}
+                      </span>
+                    )}
                   </li>
                 );
               })}
@@ -123,18 +241,43 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </div>
 
-      {/* Recent Memories */}
+      {/* Recent Memories Section */}
       <div className="panel" style={{ marginTop: '16px' }}>
-        <h2 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Recent Memories</span>
-          <button className="link" style={{ fontSize: '11px' }} onClick={() => onNavigate('memories')}>Manage memories</button>
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Brain size={16} color="var(--accent)" />
+            <h2 style={{ margin: 0 }}>Recent Memory Facts ({memories.length})</h2>
+          </div>
+          <button
+            type="button"
+            className="link"
+            style={{ fontSize: '12px' }}
+            onClick={() => onNavigate('memories')}
+          >
+            Manage archive
+          </button>
+        </div>
+
         {memories.length === 0 ? (
-          <p className="text-muted">No memories saved yet. Talk to the bot to record them.</p>
+          <EmptyState
+            icon={<Brain size={28} />}
+            title="No Memories Stored Yet"
+            description="RecallFlow saves personal facts and preferences to personalize assistance. Record your first fact or mention it in chat."
+            actionLabel="Record a Fact"
+            onAction={() => onNavigate('memories')}
+          />
         ) : (
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {memories.slice(0, 3).map((m, idx) => (
-              <li key={idx} style={{ fontSize: '12px', borderLeft: '2px solid var(--border)', paddingLeft: '10px' }}>
+              <li
+                key={idx}
+                style={{
+                  fontSize: '13px',
+                  borderLeft: '2px solid var(--border)',
+                  paddingLeft: '12px',
+                  color: 'var(--text-primary)'
+                }}
+              >
                 {m}
               </li>
             ))}

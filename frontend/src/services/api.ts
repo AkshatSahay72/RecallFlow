@@ -39,8 +39,9 @@ export async function apiRequest(
   const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, config);
 
   if (response.status === 401) {
-    // Session expired
+    // Session expired or invalid
     localStorage.removeItem('token');
+    window.dispatchEvent(new CustomEvent('auth:expired'));
     if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
       window.location.href = '/';
     }

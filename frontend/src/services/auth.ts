@@ -31,7 +31,7 @@ export function getEmailFromToken(token: string): string | null {
     );
     const payload = JSON.parse(jsonPayload);
     return payload.sub || null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
